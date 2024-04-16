@@ -1,0 +1,37 @@
+#!/bin/bash
+
+# Function to create a new public repository on GitHub and set the remote upstream
+function richmack-git-create() {
+    if [ $# -eq 0 ]; then
+        echo "Usage: richmack-git-create <repo-name> <description>"
+        return 1
+    fi
+
+    repo_name="$1"
+    description="$2"
+
+    # Create repository on GitHub
+    gh repo create $repo_name -d "$description"
+
+    # Set upstream
+    git push --set-upstream origin master
+}
+
+# Function to create a pull request from the current branch
+function richmack-git-pr() {
+    # Check if there are any uncommitted changes
+    if [[ $(git status --porcelain) ]]; then
+        echo "There are uncommitted changes. Please commit or stash them before creating a pull request."
+        return 1
+    fi
+
+    # Get current branch name
+    branch_name=$(git rev-parse --abbrev-ref HEAD)
+
+    # Create pull request
+    gh pr create --base master --head $branch_name
+}
+
+# Make the functions accessible from /usr/local/bin
+chmod +x richmack-git
+sudo cp richmack-git /usr/local/bin/
